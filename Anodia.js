@@ -1,17 +1,39 @@
 
 var rl = require('readline');
+var async = require('async');
 
 var Anodia = {
 
-	log: false,
+	logging: -1,
 	console: false,
 
 	list_modules: [],
-	modules: [],
+	module: [],
 
-	init: function() {
-		console.log('Starting initialization...');
+	init: function(callback) {
+		Anodia.log(0,'Starting initialization...');
 
+		async.series([
+			this.enable_console.bind(this),
+			this.load_modules.bind(this),
+			this.init_modules.bind(this),
+			function(cb) {
+				Anodia.log(0,'Initialization done');
+				cb(null);
+				callback(null);
+			}
+		], function(err,results) {
+			if(err)
+				Anodia.log(1,err);
+		});
+	},
+
+	add_module: function(nom, dossier) {
+		this.list_modules[nom] = dossier;
+	},
+
+	enable_console: function(callback) {
+		Anodia.log(2,"enable_console");
 		if (this.console) {
 			this.console = rl.createInterface({
 				input: process.stdin,
@@ -19,26 +41,48 @@ var Anodia = {
 			});
 		}
 
-		this.load_modules();	
-		this.init_modules();
-		
-		console.log('Initialization done');
+		callback(null);
 	},
 
-	load_modules: function() {
+	load_modules: function(callback) {
+		Anodia.log(2,"load_modules");
 		for(var name in this.list_modules) {
-			this.modules[name] = require('../'+list[name]+'/index.js');
+			this.module[name] = require('../'+this.list_modules[name]+'/index.js');
+			// require is already sync
 		}
+
+		callback(null);
 	},
 
-	init_modules: function() {
-		for( name in this.modules ) {
-			this.modules[name].init();
+	init_modules: function(callback) {
+		Anodia.log(2,"init_modules");
+
+		tasks = [];
+		for( name in this.module ) {
+			tasks.push(function(cb) {
+				this.module[name].init(this,cb);
+			}.bind(this));
 		}
+
+		tasks.push(function() {
+			callback(null);
+		})
+
+		async.series(tasks,function(err, results) {
+			if (err)
+				Anodia.log(1,err);
+		})
 	},
 
 	run: function() {
-		console.log('Running Anodia...');
+		Anodia.log(0,'Running Anodia...');
+	},
+
+	log: function(level, msg) {
+		if (this.logging >= level) {
+			if (level == 1) {msg = "ERROR: "+msg} else if (level == 2) {msg = "   "+msg}
+			console.log("A"+level+" > "+msg);
+		}
 	}
 };
 
