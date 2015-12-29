@@ -43,7 +43,9 @@ var Anodia = {
 			this.console.setPrompt('> ');
 
 			this.console.on('line', function(line) {
-				if (line != "") {
+				if (line == "exit") {
+					process.exit();
+				} else if (line != "") {
 					this.command(line);
 				}
 				this.console.prompt();
