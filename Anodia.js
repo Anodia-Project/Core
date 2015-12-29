@@ -39,6 +39,17 @@ var Anodia = {
 				input: process.stdin,
 				output: process.stdout
 			});
+
+			this.console.setPrompt('> ');
+
+			this.console.on('line', function(line) {
+				if (line != "") {
+					this.command(line);
+				}
+				this.console.prompt();
+			}.bind(this)).on('close', function() {
+				console.log("\n   ^C again to quit");
+			});
 		}
 
 		callback(null);
@@ -75,11 +86,25 @@ var Anodia = {
 	},
 
 	run: function() {
-		Anodia.log(0,'Running Anodia...');
+		Anodia.log(0,'Running Anodia...\n');
+		this.console.prompt();
 	},
 
-	log: function(level, msg) {
+	command: function(line) {
+		var cmd = line.split(" ");
+
+		var name = cmd.shift();
+
+		if(this.module[name]) {
+			this.module[name].command(cmd);
+		} else {
+			console.log("Unknown module: "+name);
+		}
+	},
+
+	log: function(level, msg, brk) {
 		if (this.logging >= level) {
+			for(var i = 0; i < brk-1; i++) { console.log("\n") }
 			if (level == 1) {msg = "ERROR: "+msg} else if (level == 2) {msg = "   "+msg}
 			console.log("A"+level+" > "+msg);
 		}
