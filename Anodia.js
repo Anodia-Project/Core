@@ -44,14 +44,16 @@ var Anodia = {
 
 			this.console.on('line', function(line) {
 				if (line == "exit") {
-					process.exit();
+					this.exit();
 				} else if (line != "") {
+					line = line.split(" ");
 					this.command(line);
 				}
 				this.console.prompt();
 			}.bind(this)).on('close', function() {
-				console.log("\n   ^C again to quit");
-			});
+				this.exit();
+				//console.log("\n   ^C again to quit");
+			}.bind(this));
 		}
 
 		callback(null);
@@ -84,7 +86,7 @@ var Anodia = {
 		async.series(tasks,function(err, results) {
 			if (err)
 				Anodia.log(1,err);
-		})
+		});
 	},
 
 	run: function() {
@@ -92,9 +94,28 @@ var Anodia = {
 		this.console.prompt();
 	},
 
-	command: function(line) {
-		var cmd = line.split(" ");
+	exit: function() {
 
+		console.log("");
+		Anodia.log(0,'Exiting Anodia...\n');
+		tasks = [];
+		for ( name in this.module ) {
+			tasks.push(function(cb) {
+				this.module[name].exit(cb);
+			}.bind(this));
+		}
+
+		tasks.push(function() {
+			process.exit();
+		});
+
+		async.series(tasks, function(err, results) {
+			if (err)
+				Anodia.log(1,err);
+		});
+	},
+
+	command: function(cmd) {
 		var name = cmd.shift();
 
 		if(this.module[name]) {

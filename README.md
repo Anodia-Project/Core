@@ -1,5 +1,8 @@
 # Core
 
+## Installation
+
+Modifier le fichier map.json pour l'adapter à vos besoins
 
 Pour lancer Anodia:
 

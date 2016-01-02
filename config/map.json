@@ -1,0 +1,36 @@
+{
+	"sensors": [
+		{
+			"pin": "A0",
+			"freq": 1000
+		},
+		{
+			"pin": "A1",
+			"freq": 1000
+		},
+		{
+			"pin": "A2",
+			"freq": 1000
+		},
+		{
+			"pin": 24,
+			"freq": 250,
+			"type": "digital"
+		},
+		{
+			"pin": 26,
+			"freq": 250,
+			"type": "digital"
+		}
+	],
+	"relays": [
+		{
+			"pin": 22,
+			"type": "NO"
+		},
+		{
+			"pin": 28,
+			"type": "NC"
+		}
+	]
+}
